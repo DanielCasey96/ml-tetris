@@ -1,23 +1,15 @@
-from model import Model, train_model
+import pygame
+from model import train_model, dataloader, optimizer, criterion, model
 from tetris import TetrisGame
-import torch
+
+pygame.font.init()
 
 
 def main():
-    # Define hyperparameters
-    input_size = 200
-    output_size = 1
-    learning_rate = 0.001
-    num_epochs = 1000
-    batch_size = 32
-
-    # Initialize the model
-    model = Model(input_size, output_size)
-    criterion = torch.nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    num_epochs = 10000
 
     # Train the model
-    train_model(model, criterion, optimizer, num_epochs, batch_size)
+    train_model(model, criterion, optimizer, dataloader, num_epochs)
 
     # Play Tetris using the trained model
     game = TetrisGame(model)

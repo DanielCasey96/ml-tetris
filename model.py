@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
-from gameEnv import MyTetrisEnv  # Custom Tetris environment
+
+from tetris import TetrisGame
 
 
 # Define the neural network model
 class Model(nn.Module):
-    def __init__(self, input_size, output_size):
+    def __init__(self):
         super(Model, self).__init__()
         self.fc = nn.Linear(input_size, output_size)
 
@@ -16,40 +16,36 @@ class Model(nn.Module):
         return x
 
 
-# Hyperparameters
-input_size = 200  # Example input size (state space dimension)
-output_size = 1  # Example output size (number of actions)
+# Define hyperparameters
+input_size = 200
+output_size = 1
 learning_rate = 0.001
-num_epochs = 1000
+data_length = 100
 batch_size = 32
 
-# Initialize Tetris environment
-env = MyTetrisEnv()
-
-# Define the model
-model = Model(input_size, output_size)
-
-# Define loss function and optimizer
-criterion = nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-# Data collection (if needed)
-data = []  # Example data collection
-
 # Convert data to PyTorch tensors (Example data)
-states = torch.tensor([0] * 200, dtype=torch.float32)
-actions = torch.tensor([0], dtype=torch.float32)
-rewards = torch.tensor([0], dtype=torch.float32)
-next_states = torch.tensor([0] * 200, dtype=torch.float32)
+states = torch.zeros((data_length, 200), dtype=torch.float32)
+actions = torch.zeros((data_length, 1), dtype=torch.float32)
+rewards = torch.zeros((data_length, 1), dtype=torch.float32)
+next_states = torch.zeros((data_length, 200), dtype=torch.float32)
 
 # Define dataset and dataloader
 dataset = TensorDataset(states, actions, rewards, next_states)
 dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
+# Initialize the model
+model = Model()
+criterion = torch.nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
 
 # Model training loop
+# Model training loop
 def train_model(model, criterion, optimizer, dataloader, num_epochs):
+    prev_loss = float('inf')  # Initialize previous loss with infinity
+
     for epoch in range(num_epochs):
+        epoch_loss = 0.0
         for batch in dataloader:
             state_batch, action_batch, reward_batch, next_state_batch = batch
 
@@ -64,8 +60,25 @@ def train_model(model, criterion, optimizer, dataloader, num_epochs):
             loss.backward()
             optimizer.step()
 
+            epoch_loss += loss.item()
+
+        # Print epoch loss
+        print(f"Epoch {epoch + 1}, Loss: {epoch_loss / len(dataloader)}")
+
+        # Calculate and print improvement
+        improvement = prev_loss - (epoch_loss / len(dataloader))
+        print(f"Improvement: {improvement}")
+
+        # Update previous loss for the next epoch
+        prev_loss = epoch_loss / len(dataloader)
+
+        # Initialize Tetris game environment
+        game = TetrisGame(model)
+
+        # Run Tetris game using the trained model
+        game.run()
+
     print("Model training complete.")
 
 
-# Call the train_model function with the required parameters
-train_model(model, criterion, optimizer, dataloader, num_epochs)
+
