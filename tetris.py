@@ -30,7 +30,6 @@ class TetrisGame:
             4: 800
         }
 
-
     def new_piece(self):
         if not self.game_over_flag:
             self.current_piece = random.choice([
@@ -246,3 +245,30 @@ class TetrisGame:
     def start_game(cls, screen):
         game = cls(screen)
         game.run()
+
+
+def step(self, action):
+    # Take action in the game environment
+    # Update game state based on action
+
+    reward = 0
+    done = False
+
+    # Implement action handling and game logic here
+
+    # Update the environment based on the action taken and determine the next state
+    next_state = self.get_observation()  # Example: Get the next state from the observation method
+
+    return next_state, reward, done
+
+
+def reset(self):
+    # Reset the environment to its initial state and return initial state
+    # Example implementation:
+    self.game_over_flag = False
+    self.board = [[0] * self.board_width for _ in range(self.board_height)]
+    self.current_piece = None
+    self.current_piece_x = 3
+    self.current_piece_y = 0
+    self.score = 0
+    return self.get_observation()
